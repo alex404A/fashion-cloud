@@ -1,4 +1,4 @@
-const mongoose = require('./connect')
+const { mongoose } = require('./connect')
 const logger = require('../utils/logger')
 const Cache = require('../model/Cache')
 const Schema = mongoose.Schema
@@ -158,6 +158,17 @@ async function removeKey(key) {
   return res.deletedCount
 }
 
+/**
+ * @returns {string} removed key
+ */
+async function removeOldest() {
+  const CacheModel = mongoose.model('Cache', CacheSchema)
+  const oldest = await CacheModel.findOne({
+  }).sort({updateTime: 1})
+  await removeKey(oldest.key)
+  return oldest.key
+}
+
 module.exports = {
   getKey,
   saveItem,
@@ -167,5 +178,6 @@ module.exports = {
   updateValue,
   getAllKey,
   removeAllKey,
-  removeKey
+  removeKey,
+  removeOldest
 }

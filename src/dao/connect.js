@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 const { mongoConfig: config } = require('../utils/config')
 const logger = require('../utils/logger')
 
-async function getConnect () {
+async function buildConnect () {
   const url = `mongodb://${config.username}:${config.password}@${config.host}:${config.port}/${config.db}?authSource=${config.authdb}`
   try {
     await mongoose.connect(url, {
@@ -17,6 +17,7 @@ async function getConnect () {
   }
 }
 
-getConnect()
-
-module.exports = mongoose
+module.exports = {
+  mongoose,
+  buildConnect 
+}

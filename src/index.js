@@ -6,6 +6,8 @@ const service = require('./route/handler')
 const ParameterIllegalError = require('./exception/ParameterIllegalError')
 const InternalError = require('./exception/InternalError')
 const RestfulError = require('./exception/RestfulError')
+const { buildConnect } = require('./dao/connect')
+const cacheUtil = require('./utils/cacheUtil')
 
 const app = express()
 app.use(bodyParser.json())
@@ -91,10 +93,16 @@ function errorHandler(err, res) {
 }
 
 function requestLogger(req, res, next) {
-  logger.info(`${req.method} uri: ${req.url}`)
+  logger.info(`${req.method}: ${req.url}`)
   next()
 }
 
-app.listen(APPLICATION_NODE_PORT, () => {
-  logger.info(`server started at http://localhost:${APPLICATION_NODE_PORT}`)
-})
+async function init() {
+  await buildConnect()
+  await cacheUtil.init()
+  app.listen(APPLICATION_NODE_PORT, () => {
+    logger.info(`server started at http://localhost:${APPLICATION_NODE_PORT}`)
+  })
+}
+
+init()

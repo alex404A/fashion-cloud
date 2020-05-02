@@ -14,7 +14,7 @@ class MongoConfig {
 class CacheConfig {
   constructor() {
     this.ttl = 10 * 60 * 1000 // 10 min ttl
-    this.scale = 10
+    this.scale = 2
   }
 }
 
