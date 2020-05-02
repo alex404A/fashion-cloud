@@ -13,18 +13,6 @@ const CacheSchema = new Schema({
   collection: 'cache'
 })
 
-async function mongoQuery (query) {
-  return new Promise((resolve, reject) => {
-    query.exec((err, result) => {
-      if (err) {
-        reject(err)
-      } else {
-        resolve(result)
-      }
-    })
-  })
-}
-
 /**
  * 
  * @param {string} key 
@@ -32,20 +20,15 @@ async function mongoQuery (query) {
  */
 async function getKey(key) {
   const CacheModel = mongoose.model('Cache', CacheSchema)
-  let query = CacheModel.findOne({
+  const cache = await CacheModel.findOne({
     key: {
       $eq: key
     }
   })
-  try {
-    const cache = await mongoQuery(query)
-    if (cache) {
-      return new Cache(cache)
-    } else {
-      return null
-    }
-  } catch (err) {
-    logger.error(err)
+  // const cache = await mongoQuery(query)
+  if (cache) {
+    return new Cache(cache)
+  } else {
     return null
   }
 }
@@ -58,8 +41,8 @@ async function getKey(key) {
 async function saveItem(item) {
   const CacheModel = mongoose.model('Cache', CacheSchema)
   const cache = new CacheModel(item)
-  await cache.save()
-  return 1
+  const res = await cache.save()
+  return res.nModified
 }
 
 /**
@@ -107,9 +90,82 @@ async function updateUpdateTime(key) {
   return res.nModified
 }
 
+/**
+ * 
+ * @return {Number} affected number
+ */
+async function updateUpdateTimeForAll() {
+  const CacheModel = mongoose.model('Cache', CacheSchema)
+  const res = await CacheModel.updateMany({
+  }, {
+    $set: {
+      updateTime: new Date()
+    }
+  })
+  return res.nModified
+}
+
+/**
+ * 
+ * @param {string} key 
+ * @param {string} value 
+ * @return {Number} affected number
+ */
+async function updateValue(key, value) {
+  const CacheModel = mongoose.model('Cache', CacheSchema)
+  const res = await CacheModel.updateOne({
+    key: {
+      $eq: key
+    }
+  }, {
+    $set: {
+      value: value,
+      updateTime: new Date()
+    }
+  })
+  return res.nModified
+}
+
+/**
+ * 
+ * @return {Array<Cache>} cache list
+ */
+async function getAllKey() {
+  const CacheModel = mongoose.model('Cache', CacheSchema)
+  const result = await CacheModel.find({})
+  return result.map(item => new Cache(item))
+}
+
+/**
+ * 
+ * @return {Number} affected number
+ */
+async function removeAllKey() {
+  const CacheModel = mongoose.model('Cache', CacheSchema)
+  const res = await CacheModel.deleteMany({})
+  return res.deletedCount
+}
+
+/**
+ * @param {string} key 
+ * @return {Number} affected number
+ */
+async function removeKey(key) {
+  const CacheModel = mongoose.model('Cache', CacheSchema)
+  const res = await CacheModel.deleteOne({
+    key
+  })
+  return res.deletedCount
+}
+
 module.exports = {
   getKey,
   saveItem,
   updateOrCreateItem,
-  updateUpdateTime
+  updateUpdateTime,
+  updateUpdateTimeForAll,
+  updateValue,
+  getAllKey,
+  removeAllKey,
+  removeKey
 }

@@ -2,7 +2,7 @@ const express = require("express")
 const bodyParser = require('body-parser')
 const logger = require('./utils/logger')
 const { APPLICATION_NODE_PORT } = require('./utils/config')
-const { getKeyHandler } = require('./route/handler')
+const service = require('./route/handler')
 const ParameterIllegalError = require('./exception/ParameterIllegalError')
 const InternalError = require('./exception/InternalError')
 const RestfulError = require('./exception/RestfulError')
@@ -17,11 +17,39 @@ app.use((err, req, res, next) => {
 app.get('/api/key', async (req, res) => {
   const key = req.query.key
   if (!!key) {
-    const result = await getKeyHandler(key)
+    const result = await service.getKey(key)
     sendRes(result, res)
   } else {
     throw new ParameterIllegalError('key is invalid')
   }
+})
+
+app.get('/api/key/all', async (req, res) => {
+  const result = await service.getAllKey()
+  sendRes(result, res)
+})
+
+app.post('/api/key', async (req, res) => {
+  const { key, value } = req.body
+  if (!key) {
+    throw new ParameterIllegalError('key is invalid')
+  }
+  if (!value) {
+    throw new ParameterIllegalError('value is invalid')
+  }
+  const result = await service.updateKey(key, value)
+  sendRes(result, res)
+})
+
+app.delete('/api/key/all', async (req, res) => {
+  const result = await service.removeAllKey()
+  sendRes(result, res)
+})
+
+app.delete('/api/key', async (req, res) => {
+  const { key } = req.body
+  const result = await service.removeKey(key)
+  sendRes(result, res)
 })
 
 function sendRes(result, res) {

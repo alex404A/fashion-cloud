@@ -2,6 +2,7 @@ const logger = require('../utils/logger')
 const dao = require('../dao/mongodbImpl')
 const Cache = require('../model/Cache')
 const { cacheConfig } = require('../utils/config')
+const ParameterIllegalError = require('../exception/ParameterIllegalError')
 
 /**
  * 
@@ -13,7 +14,7 @@ const { cacheConfig } = require('../utils/config')
  * @param {string} key
  * @return {string} value
  */
-async function getKeyHandler(key) {
+async function getKey(key) {
   let item = await dao.getKey(key)
   if (item === null) {
     logger.info(`cache ${key} miss`)
@@ -21,7 +22,6 @@ async function getKeyHandler(key) {
     dao.saveItem(item)
   } else {
     logger.info(`cache ${key} hit`)
-    logger.info(item.updateTime)
     if (item.isExpired()) {
       item = Cache.buildDummyCache(key)
       dao.updateOrCreateItem(item)
@@ -32,6 +32,49 @@ async function getKeyHandler(key) {
   return item.value
 }
 
+/**
+ * 
+ * @param {string} key 
+ * @param {string} value
+ * @return {Number} affected number
+ */
+async function updateKey(key, value) {
+  const item = await dao.getKey(key)
+  if (item === null || item.isExpired()) {
+    throw new ParameterIllegalError(`cache ${key} not found`)
+  }
+  return await dao.updateValue(key, value)
+}
+
+/**
+ * 
+ * @return {Array<Cache>} cache list
+ */
+async function getAllKey() {
+  await dao.updateUpdateTimeForAll()
+  const cacheList = await dao.getAllKey()
+  return cacheList.filter(cache => !cache.isExpired())
+}
+
+/**
+ * @return {Number} affected number
+ */
+async function removeAllKey() {
+  return await dao.removeAllKey()
+}
+
+/**
+ * @oaram {string} key
+ * @return {Number} affected number
+ */
+async function removeKey(key) {
+  return await dao.removeKey(key)
+}
+
 module.exports = {
-  getKeyHandler
+  getKey,
+  updateKey,
+  getAllKey,
+  removeAllKey,
+  removeKey
 }
