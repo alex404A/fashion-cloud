@@ -4,8 +4,8 @@
   "description": "take home tech challenge",
   "main": "index.js",
   "scripts": {
-    "test": "mocha",
-    "start": ". ./.development.env.sh && node src/index.js"
+    "start": ". ./.development.env.sh && node src/index.js",
+    "test": ". ./.test.env.sh && node test/test.js"
   },
   "author": "alex",
   "license": "ISC",
@@ -15,5 +15,9 @@
     "mocha": "^7.1.2",
     "mongoose": "^5.9.11",
     "winston-simple-wrapper": "^0.3.1"
+  },
+  "devDependencies": {
+    "request": "^2.88.2",
+    "request-promise": "^4.2.5"
   }
 }

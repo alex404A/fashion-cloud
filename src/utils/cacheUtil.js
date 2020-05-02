@@ -32,7 +32,7 @@ class CacheUtil {
     const cacheList = await dao.getAllKey()
     const activeNum = cacheList.filter(cache => !cache.isExpired()).length
     this.tokens = Math.max(0, config.scale - activeNum)
-    logger.info(`${this.tokens} tokens remaing`)
+    logger.info(`${this.tokens} tokens remaining`)
   }
 
   isTokenEnough() {
@@ -40,12 +40,12 @@ class CacheUtil {
   }
 
   releaseToken() {
-    logger.info(`${this.tokens + 1} tokens remaing`)
+    logger.info(`${this.tokens + 1} tokens remaining`)
     return this.tokens++
   }
 
   releaseAllTokens() {
-    logger.info(`${config.scale} tokens remaing`)
+    logger.info(`${config.scale} tokens remaining`)
     return this.tokens = config.scale
   }
 
@@ -54,7 +54,7 @@ class CacheUtil {
       await dao.removeOldest()
       cacheUtil.releaseToken()
     }
-    logger.info(`${this.tokens - 1} tokens remaing`)
+    logger.info(`${this.tokens - 1} tokens remaining`)
     return this.tokens--
   }
 }

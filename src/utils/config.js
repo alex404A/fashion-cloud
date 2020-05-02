@@ -2,12 +2,12 @@ const logger = require('./logger')
 
 class MongoConfig {
   constructor() {
-    this.username = 'next'
-    this.password = 'common!dev'
-    this.host = '128.106.66.190'
-    this.port = '57017'
-    this.db = 'trial'
-    this.authdb = 'admin'
+    this.username = ''
+    this.password = ''
+    this.host = ''
+    this.port = ''
+    this.db = ''
+    this.authdb = ''
   }
 }
 
@@ -18,12 +18,23 @@ class CacheConfig {
   }
 }
 
-let APPLICATION_NODE_PORT = '8999'
+let APPLICATION_NODE_PORT
+let ENV = 'development'
 const mongoConfig = new MongoConfig()
 const cacheConfig = new CacheConfig()
 
-if (process.env.APPLICATION_NODE_PORT) {
+if (!process.env.APPLICATION_NODE_PORT) {
+  logger.error(`no port configured`)
+  process.exit(1)
+} else {
   APPLICATION_NODE_PORT = process.env.APPLICATION_NODE_PORT
+}
+
+if (!process.env.ENV) {
+  logger.error(`no env configured`)
+  process.exit(1)
+} else {
+  ENV = process.env.ENV
 }
 
 if (!process.env.MONGODB_USERNAME) {
@@ -74,6 +85,7 @@ if (process.env.CACHE_SCALE) {
 
 module.exports = {
   APPLICATION_NODE_PORT,
+  ENV,
   mongoConfig,
   cacheConfig
 }
