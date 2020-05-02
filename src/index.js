@@ -14,10 +14,10 @@ app.use((err, req, res, next) => {
   errorHandler(err, res)
 })
 
-app.get('/api/key', (req, res) => {
+app.get('/api/key', async (req, res) => {
   const key = req.query.key
   if (!!key) {
-    const result = getKeyHandler(key)
+    const result = await getKeyHandler(key)
     sendRes(result, res)
   } else {
     throw new ParameterIllegalError('key is invalid')

@@ -1,8 +1,9 @@
 const logger = require('../utils/logger')
+const dao = require('../dao/mongodbImpl')
 
-function getKeyHandler(key) {
-  logger.info('hello world')
-  return 'akdjaslkfj'
+async function getKeyHandler(key) {
+  const cache = await dao.getKey(key)
+  return cache.value
 }
 
 module.exports = {
