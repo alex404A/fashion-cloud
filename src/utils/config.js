@@ -11,8 +11,16 @@ class MongoConfig {
   }
 }
 
+class CacheConfig {
+  constructor() {
+    this.ttl = 10 * 60 * 1000 // 10 min ttl
+    this.scale = 10
+  }
+}
+
 let APPLICATION_NODE_PORT = '8999'
 const mongoConfig = new MongoConfig()
+const cacheConfig = new CacheConfig()
 
 if (process.env.APPLICATION_NODE_PORT) {
   APPLICATION_NODE_PORT = process.env.APPLICATION_NODE_PORT
@@ -48,7 +56,24 @@ if (process.env.MONGODB_AUTHDB) {
   mongoConfig.authdb = process.env.MONGODB_AUTHDB
 }
 
+if (process.env.CACHE_TTL) {
+  cacheConfig.ttl = parseInt(process.env.CACHE_TTL)
+  if (Number.isNaN(cacheConfig.ttl)) {
+    logger.error(`cache ttl ${process.env.CACHE_TTL} is not valid number`)
+    process.exit(1)
+  }
+}
+
+if (process.env.CACHE_SCALE) {
+  cacheConfig.scale = parseInt(process.env.CACHE_SCALE)
+  if (Number.isNaN(cacheConfig.scale)) {
+    logger.error(`cache scale ${process.env.CACHE_SCALE} is not valid number`)
+    process.exit(1)
+  }
+}
+
 module.exports = {
   APPLICATION_NODE_PORT,
-  mongoConfig
+  mongoConfig,
+  cacheConfig
 }

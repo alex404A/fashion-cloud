@@ -3,7 +3,6 @@ const { mongoConfig: config } = require('../utils/config')
 const logger = require('../utils/logger')
 
 async function getConnect () {
-  logger.info(config)
   const url = `mongodb://${config.username}:${config.password}@${config.host}:${config.port}/${config.db}?authSource=${config.authdb}`
   try {
     await mongoose.connect(url, {

@@ -3,11 +3,12 @@ const logger = require('../utils/logger')
 const Cache = require('../model/Cache')
 const Schema = mongoose.Schema
 
-const cacheSchema = new Schema({
+const CacheSchema = new Schema({
   id: String,
   key: String,
   value: String,
-  expire: Number 
+  createTime: Date,
+  updateTime: Date
 }, {
   collection: 'cache'
 })
@@ -24,17 +25,22 @@ async function mongoQuery (query) {
   })
 }
 
+/**
+ * 
+ * @param {string} key 
+ * @return {Cache|null} 
+ */
 async function getKey(key) {
-  const Cache = mongoose.model('Cache', cacheSchema)
-  let query = Cache.find({
+  const CacheModel = mongoose.model('Cache', CacheSchema)
+  let query = CacheModel.findOne({
     key: {
       $eq: key
     }
   })
   try {
-    const cacheList = await mongoQuery(query)
-    if (cacheList.length === 1) {
-      return new Cache(cacheList[0])
+    const cache = await mongoQuery(query)
+    if (cache) {
+      return new Cache(cache)
     } else {
       return null
     }
@@ -44,6 +50,66 @@ async function getKey(key) {
   }
 }
 
+/**
+ * 
+ * @param {Cache} item 
+ * @return {Number} affected number 
+ */
+async function saveItem(item) {
+  const CacheModel = mongoose.model('Cache', CacheSchema)
+  const cache = new CacheModel(item)
+  await cache.save()
+  return 1
+}
+
+/**
+ * 
+ * @param {Cache} cache
+ * @return {Number} affected number 
+ */
+async function updateOrCreateItem(cache) {
+  const CacheModel = mongoose.model('Cache', CacheSchema)
+  try {
+    const res = await CacheModel.updateOne({
+      key: {
+        $eq: cache.key
+      }
+    }, {
+      $set: {
+        value: cache.value,
+        createTime: new Date(),
+        updateTime: new Date()
+      }
+    })
+    return res.nModified
+  } catch (err) {
+    logger.warn(`cache item ${cache.key} has been removed`)
+    return await saveItem(cache)
+  }
+}
+
+/**
+ * 
+ * @param {string} key 
+ * @return {Number} affected number
+ */
+async function updateUpdateTime(key) {
+  const CacheModel = mongoose.model('Cache', CacheSchema)
+  const res = await CacheModel.updateOne({
+    key: {
+      $eq: key
+    }
+  }, {
+    $set: {
+      updateTime: new Date()
+    }
+  })
+  return res.nModified
+}
+
 module.exports = {
-  getKey
+  getKey,
+  saveItem,
+  updateOrCreateItem,
+  updateUpdateTime
 }
